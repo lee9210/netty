@@ -420,14 +420,14 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Returns the maximum possible number of writable bytes, which is equal to
      * {@code (this.maxCapacity - this.writerIndex)}.
      */
-    public abstract int maxWritableBytes();
+    public abstract int maxWritableBytes(); // 返回最大可写字节数
 
     /**
      * Returns {@code true}
      * if and only if {@code (this.writerIndex - this.readerIndex)} is greater
      * than {@code 0}.
      */
-    public abstract boolean isReadable();
+    public abstract boolean isReadable(); // 如果 writerIndex-readerIndex > 0 返回true
 
     /**
      * Returns {@code true} if and only if this buffer contains equal to or more than the specified number of elements.
