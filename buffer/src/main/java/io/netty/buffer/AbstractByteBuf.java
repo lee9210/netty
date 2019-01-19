@@ -222,6 +222,12 @@ public abstract class AbstractByteBuf extends ByteBuf {
         return this;
     }
 
+    /**
+     * 释放已读空间
+     * 1. 如果没有读取完，则把未读取的数据复制到开始位置，并且充值写索引和读索引
+     * 2. 如果读取完了，则重置标记为，并且读写索引都设置成0
+     * @return
+     */
     @Override
     public ByteBuf discardReadBytes() {
         // 校验可访问
@@ -251,6 +257,13 @@ public abstract class AbstractByteBuf extends ByteBuf {
         return this;
     }
 
+    /**
+     * 释放部分已读空间。
+     * 1. 未读取，直接返回
+     * 2. 如果全部读取完，则调整标记位，并设置读写索引为0
+     * 3. 如果读索引超过容量的一半，则把未读取数据复制到头，并且调整标记位。
+     * @return
+     */
     @Override
     public ByteBuf discardSomeReadBytes() {
         // 校验可访问
@@ -283,6 +296,12 @@ public abstract class AbstractByteBuf extends ByteBuf {
         return this;
     }
 
+    /**
+     * 调整标记位，即调整读标记和写标记的位置
+     * 1. 若读标记小于decrement，则把读标记置零，若写标记小于decrement，则把写标记置零
+     * 2. 读标记大于decrement，则读写标记减少decrement
+     * @param decrement
+     */
     protected final void adjustMarkers(int decrement) {
         int markedReaderIndex = this.markedReaderIndex;
         // 读标记位小于减少值(decrement)
