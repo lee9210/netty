@@ -254,6 +254,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int capacity(); // 容量
 
     /**
+     * 调整此缓冲区的容量。如果{@code newCapacity}小于当前容量，则该缓冲区的内容将被截断。
+     * 如果{@code newCapacity}大于当前容量，则缓冲区将附加长度为{@code (newCapacity - currentCapacity)}的未指定数据。
+     *
      * Adjusts the capacity of this buffer.  If the {@code newCapacity} is less than the current
      * capacity, the content of this buffer is truncated.  If the {@code newCapacity} is greater
      * than the current capacity, the buffer is appended with unspecified data whose length is
@@ -285,6 +288,11 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteOrder order(); // 字节序，即大小端。推荐阅读 http://www.ruanyifeng.com/blog/2016/11/byte-order.html
 
     /**
+     * 返回具有指定{@code endianness}的缓冲区，该缓冲区共享该缓冲区的整个区域、索引和标记。
+     * 修改返回缓冲区的内容、索引或标记，或该缓冲区的内容、索引和标记相互影响。
+     * 如果指定的{@code endianness}与此缓冲区的字节顺序相同，则此方法可以返回{@code this}。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}。
+     *
      * Returns a buffer with the specified {@code endianness} which shares the whole region,
      * indexes, and marks of this buffer.  Modifying the content, the indexes, or the marks of the
      * returned buffer or this buffer affects each other's content, indexes, and marks.  If the
@@ -306,6 +314,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf unwrap(); // 获得被包装( wrap )的 ByteBuf 对象。
 
     /**
+     * 检查所有 Component ,只有所有 Component 都是直接内存，才会返回true
+     *
      * Returns {@code true} if and only if this buffer is backed by an
      * NIO direct buffer.
      */
@@ -2211,6 +2221,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf retainedSlice();
 
     /**
+     * 返回该缓冲区的子区域的一部分。修改返回缓冲区的内容，或者这个缓冲区在维护独立的索引和标记时影响彼此的内容。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}。
+     *
      * Returns a slice of this buffer's sub-region. Modifying the content of
      * the returned buffer or this buffer affects each other's content while
      * they maintain separate indexes and marks.
@@ -2358,6 +2371,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuffer[] nioBuffers(int index, int length);
 
     /**
+     * 当且仅当这个缓冲区有一个后备字节数组时，返回{@code true}。如果该方法返回true，您可以安全地调用{@link #array()}和{@link #arrayOffset()}。
+     *
      * Returns {@code true} if and only if this buffer has a backing byte array.
      * If this method returns true, you can safely call {@link #array()} and
      * {@link #arrayOffset()}.
@@ -2365,6 +2380,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract boolean hasArray();
 
     /**
+     * 返回此缓冲区的备份字节数组。
+     *
      * Returns the backing byte array of this buffer.
      *
      * @throws UnsupportedOperationException
@@ -2373,6 +2390,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract byte[] array();
 
     /**
+     * 返回此缓冲区的备份字节数组中的第一个字节的偏移量。
+     *
      * Returns the offset of the first byte within the backing byte array of
      * this buffer.
      *
@@ -2382,6 +2401,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int arrayOffset();
 
     /**
+     * 当且仅当该缓冲区具有指向支持数据的低级内存地址的引用时，返回{@code true}。
+     *
      * Returns {@code true} if and only if this buffer has a reference to the low-level memory address that points
      * to the backing data.
      */
