@@ -307,5 +307,4 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         }
         return Math.min(newCapacity, maxCapacity);
     }
-
 }
