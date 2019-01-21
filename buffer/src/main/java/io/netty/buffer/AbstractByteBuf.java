@@ -1514,8 +1514,13 @@ public abstract class AbstractByteBuf extends ByteBuf {
         checkReadableBytes0(minimumReadableBytes);
     }
 
+    /**
+     * 检查新容量
+     * @param newCapacity
+     */
     protected final void checkNewCapacity(int newCapacity) {
         ensureAccessible();
+        // 若新容量小于 0 或者大于最大容量限制，抛出异常
         if (newCapacity < 0 || newCapacity > maxCapacity()) {
             throw new IllegalArgumentException("newCapacity: " + newCapacity + " (expected: 0-" + maxCapacity() + ')');
         }
