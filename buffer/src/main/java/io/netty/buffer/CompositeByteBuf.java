@@ -779,25 +779,39 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     public CompositeByteBuf capacity(int newCapacity) {
         checkNewCapacity(newCapacity);
 
+        // 获取原来的容量大小
         int oldCapacity = capacity();
+        // 如果新容量大小 大于 原来容量大小
         if (newCapacity > oldCapacity) {
+            // 获取差值
             final int paddingLength = newCapacity - oldCapacity;
             ByteBuf padding;
+            // 获取内部的 Component 数量
             int nComponents = components.size();
+            // 如果本对象中 Component 数量小于最大允许数量
             if (nComponents < maxNumComponents) {
+                // 创建一个空的 Bytebuf
                 padding = allocBuffer(paddingLength);
                 padding.setIndex(0, paddingLength);
+                // 把空的 Bytebuf 放入此对象
                 addComponent0(false, components.size(), padding);
+            // 当本对象中 Component 数量大于等于最大允许数时候
             } else {
+                // 创建一个空的 Bytebuf
                 padding = allocBuffer(paddingLength);
                 padding.setIndex(0, paddingLength);
                 // FIXME: No need to create a padding buffer and consolidate.
                 // Just create a big single buffer and put the current content there.
+
+                // 把空的 Bytebuf 放入此对象
                 addComponent0(false, components.size(), padding);
                 consolidateIfNeeded();
             }
+        // 如果新容量大小 小于 原来容量大小
         } else if (newCapacity < oldCapacity) {
+            // 获取差值
             int bytesToTrim = oldCapacity - newCapacity;
+            // 从最后一个 component 开始移除，直到符合长度开始。
             for (ListIterator<Component> i = components.listIterator(components.size()); i.hasPrevious();) {
                 Component c = i.previous();
                 if (bytesToTrim >= c.length) {
@@ -813,9 +827,10 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
                 i.set(newC);
                 break;
             }
-
+            // 如果 readIndex 大于 newCapacity。设置读写 index 均为 newCapacity
             if (readerIndex() > newCapacity) {
                 setIndex(newCapacity, newCapacity);
+            // 如果 writeIndex 大于 newCapacity。设置writeIndex 为 newCapacity
             } else if (writerIndex() > newCapacity) {
                 writerIndex(newCapacity);
             }
