@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import static io.netty.util.internal.ObjectUtil.checkPositive;
 
 /**
+ * ByteBuf 的计数引用实现类
  * Abstract base class for {@link ByteBuf} implementations that count references.
  */
 public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
@@ -51,25 +52,39 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
     /**
      * 直接修改 refCnt
-     *
+     * 使用AtomicIntegerFieldUpdater的特性，直接修改 refCnt 的值
      * An unsafe operation intended for use by a subclass that sets the reference count of the buffer directly
      */
     protected final void setRefCnt(int refCnt) {
         refCntUpdater.set(this, refCnt);
     }
 
+    /**
+     * 增加引用计数 1
+     * @return
+     */
     @Override
     public ByteBuf retain() {
         return retain0(1);
     }
 
+    /**
+     * 增加引用计数 n
+     * @param increment
+     * @return
+     */
     @Override
     public ByteBuf retain(int increment) {
         return retain0(checkPositive(increment, "increment"));
     }
 
+    /**
+     * 必须保证原来的值大于0 或者 increment 大于0
+     * @param increment
+     * @return
+     */
     private ByteBuf retain0(final int increment) {
-        // 增加
+        // 增加 得到原来的值 oldRef
         int oldRef = refCntUpdater.getAndAdd(this, increment);
         // 原有 refCnt 就是 <= 0 ；或者，increment 为负数
         if (oldRef <= 0 || oldRef + increment < oldRef) {
@@ -92,16 +107,30 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
         return this;
     }
 
+    /**
+     * 减少引用计数 1
+     * @return
+     */
     @Override
     public boolean release() {
         return release0(1);
     }
 
+    /**
+     * 减少应用计数 decrement，实际调用 release0(int decrement) 函数。
+     * @param decrement
+     * @return
+     */
     @Override
     public boolean release(int decrement) {
         return release0(checkPositive(decrement, "decrement"));
     }
 
+    /**
+     * 减少引用计数 decrement
+     * @param decrement
+     * @return
+     */
     @SuppressWarnings("Duplicates")
     private boolean release0(int decrement) {
         // 减少
@@ -111,7 +140,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
             // 释放
             deallocate();
             return true;
-            // 减少的值得大于 原有 oldRef ，说明“越界”；或者，increment 为负数
+        // 减少的值得大于 原有 oldRef ，说明“越界”；或者，increment 为负数
         } else if (oldRef < decrement || oldRef - decrement > oldRef) {
             // Ensure we don't over-release, and avoid underflow.
             // 加回去，负负得正。
@@ -123,6 +152,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     }
 
     /**
+     * 当引用计数为 0 的时候，释放此对象。
      * Called once {@link #refCnt()} is equals 0.
      */
     protected abstract void deallocate();
