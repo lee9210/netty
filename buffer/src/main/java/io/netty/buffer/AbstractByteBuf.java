@@ -324,6 +324,12 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
     }
 
+    /**
+     * 确保ByteBuf 中的可写容量最小为minWritableBytes
+     * @param minWritableBytes
+     *        the expected minimum number of writable bytes
+     * @return
+     */
     @Override
     public ByteBuf ensureWritable(int minWritableBytes) {
         if (minWritableBytes < 0) {
@@ -334,6 +340,13 @@ public abstract class AbstractByteBuf extends ByteBuf {
         return this;
     }
 
+    /**
+     * 重新设置容量上限
+     * 1. 如果剩余容量大于minWritableBytes，则直接返回
+     * 2. 如果超过最大上限抛出异常
+     * 3. 如果没有超过最大上限，则重新计算容量大小，默认为2倍扩容，并且不超过最大上限。并且重新设置内容上限
+     * @param minWritableBytes
+     */
     final void ensureWritable0(int minWritableBytes) {
         // 检查是否可访问
         ensureAccessible();
