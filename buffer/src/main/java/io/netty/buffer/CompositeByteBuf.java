@@ -37,16 +37,30 @@ import java.util.NoSuchElementException;
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
+ * 一个虚拟缓冲区，它将多个缓冲区显示为一个合并的缓冲区。
+ * 建议使用{ByteBufAllocator#compositeBuffer()}或{Unpooled#wrappedBuffer(ByteBuf…)}而不是显式调用构造函数。
+ *
  * A virtual buffer which shows multiple buffers as a single merged buffer.  It is recommended to use
  * {@link ByteBufAllocator#compositeBuffer()} or {@link Unpooled#wrappedBuffer(ByteBuf...)} instead of calling the
  * constructor explicitly.
  */
 public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements Iterable<ByteBuf> {
 
+    /**
+     * 空ByteBuffer
+     */
     private static final ByteBuffer EMPTY_NIO_BUFFER = Unpooled.EMPTY_BUFFER.nioBuffer();
+
+    /**
+     * 空 ByteBuf 迭代器
+     */
     private static final Iterator<ByteBuf> EMPTY_ITERATOR = Collections.<ByteBuf>emptyList().iterator();
 
+    /**
+     * ByteBuf 分配器
+     */
     private final ByteBufAllocator alloc;
+
     private final boolean direct;
     private final ComponentList components;
     private final int maxNumComponents;
@@ -68,8 +82,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         this(alloc, direct, maxNumComponents, buffers, 0, buffers.length);
     }
 
-    CompositeByteBuf(
-            ByteBufAllocator alloc, boolean direct, int maxNumComponents, ByteBuf[] buffers, int offset, int len) {
+    CompositeByteBuf(ByteBufAllocator alloc, boolean direct, int maxNumComponents, ByteBuf[] buffers, int offset, int len) {
         super(AbstractByteBufAllocator.DEFAULT_MAX_CAPACITY);
         if (alloc == null) {
             throw new NullPointerException("alloc");
@@ -112,6 +125,14 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         setIndex(0, capacity());
     }
 
+    /**
+     * 静态方法
+     * 创建一个 initComponents 和 maxNumComponents 中最大值的 ComponentList
+     *
+     * @param initComponents
+     * @param maxNumComponents
+     * @return
+     */
     private static ComponentList newList(int initComponents, int maxNumComponents) {
         int capacityGuess = Math.min(AbstractByteBufAllocator.DEFAULT_MAX_COMPONENTS, maxNumComponents);
         return new ComponentList(Math.max(initComponents, capacityGuess));
@@ -127,6 +148,10 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 添加给定的{@link ByteBuf}。
+     * 注意，此方法不会增加{@link CompositeByteBuf}的{@code writerIndex}。如果您需要增加它，使用{@link #addComponent(boolean, ByteBuf)}。
+     * {@link ByteBuf#release()} {@code buffer}的所有权转移到这个{@link CompositeByteBuf}。
+     *
      * Add the given {@link ByteBuf}.
      * <p>
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -141,6 +166,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 添加给定的{@link ByteBuf}s。
+     *
      * Add the given {@link ByteBuf}s.
      * <p>
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -156,6 +183,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 添加给定的{@link ByteBuf}s。
+     *
      * Add the given {@link ByteBuf}s.
      * <p>
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -171,6 +200,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 在特定索引上添加给定的{@link ByteBuf}。
+     *
      * Add the given {@link ByteBuf} on the specific index.
      * <p>
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -186,6 +217,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 如果{@code increaseWriterIndex}为{@code true}，则添加给定的{@link ByteBuf}并增加{@code writerIndex}。
+     *
      * Add the given {@link ByteBuf} and increase the {@code writerIndex} if {@code increaseWriterIndex} is
      * {@code true}.
      *
@@ -201,6 +234,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 如果{@code increaseWriterIndex}为{@code true}，则添加给定的{@link ByteBuf}s并增加{@code writerIndex}。
+     *
      * Add the given {@link ByteBuf}s and increase the {@code writerIndex} if {@code increaseWriterIndex} is
      * {@code true}.
      *
@@ -216,6 +251,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 如果{@code increaseWriterIndex}为{@code true}，则添加给定的{@link ByteBuf}s并增加{@code writerIndex}。
+     *
      * Add the given {@link ByteBuf}s and increase the {@code writerIndex} if {@code increaseWriterIndex} is
      * {@code true}.
      *
@@ -231,6 +268,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 在特定索引上添加给定的{@link ByteBuf}，如果{@code increaseWriterIndex}为{@code true}，则增加{@code writerIndex}。
+     *
      * Add the given {@link ByteBuf} on the specific index and increase the {@code writerIndex}
      * if {@code increaseWriterIndex} is {@code true}.
      *
@@ -247,28 +286,43 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 在给定索引 cIndex 上增加 ByteBuf, 如果 increaseWriterIndex 为true，增加 writerIndex
+     * 如果 increaseWriterIndex 为 true
+     *
+     * 前提条件是{@code buffer != null}。
+     *
      * Precondition is that {@code buffer != null}.
      */
     private int addComponent0(boolean increaseWriterIndex, int cIndex, ByteBuf buffer) {
+        // 断言buffer不为null
         assert buffer != null;
+        // 是否增加成功
         boolean wasAdded = false;
         try {
+            // 检查索引
             checkComponentIndex(cIndex);
 
+            // 剩余可读字节数
             int readableBytes = buffer.readableBytes();
 
             // No need to consolidate - just add a component to the list.
+            // 不需要合并 — 只需向列表中添加一个组件。
+            // 首先把 buffer 拷贝一份，并把未读部分提取出来，组成一个新的 buffer ，最后把 buffer 组装成一个 Component
             @SuppressWarnings("deprecation")
             Component c = new Component(buffer.order(ByteOrder.BIG_ENDIAN).slice());
+            // 如果索引等于 components.size() 则直接增加在最后。
             if (cIndex == components.size()) {
                 wasAdded = components.add(c);
+                // 如果索引等于 0 ，该组件的偏移量为buffer的可读字节数
                 if (cIndex == 0) {
                     c.endOffset = readableBytes;
+                // 否则的话 组件的位移量为前驱的偏移量，偏移量为前驱偏移量加可读字节数
                 } else {
                     Component prev = components.get(cIndex - 1);
                     c.offset = prev.endOffset;
                     c.endOffset = c.offset + readableBytes;
                 }
+            // 在对应的索引位置增加Component 并更新offset
             } else {
                 components.add(cIndex, c);
                 wasAdded = true;
@@ -276,11 +330,13 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
                     updateComponentOffsets(cIndex);
                 }
             }
+            // 如果 increaseWriterIndex 为 true, 则更新writerIndex
             if (increaseWriterIndex) {
                 writerIndex(writerIndex() + buffer.readableBytes());
             }
             return cIndex;
         } finally {
+            // 写入失败，释放buffer
             if (!wasAdded) {
                 buffer.release();
             }
@@ -288,6 +344,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 在特定索引上添加给定的{@link ByteBuf}s
+     *
      * Add the given {@link ByteBuf}s on the specific index
      * <p>
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -307,20 +365,33 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return this;
     }
 
+    /**
+     * 从给定索引位置开始，增加 buffers
+     * @param increaseWriterIndex
+     * @param cIndex
+     * @param buffers
+     * @param offset
+     * @param len
+     * @return
+     */
     private int addComponents0(boolean increaseWriterIndex, int cIndex, ByteBuf[] buffers, int offset, int len) {
         checkNotNull(buffers, "buffers");
         int i = offset;
         try {
+            // 验证索引
             checkComponentIndex(cIndex);
 
             // No need for consolidation
+            // 不需要合并
             while (i < len) {
                 // Increment i now to prepare for the next iteration and prevent a duplicate release (addComponent0
                 // will release if an exception occurs, and we also release in the finally block here).
+                // 现在，我要为下一次迭代做准备，并防止重复发布(如果发生异常，addComponent0将会发布，我们也会在finally块中发布)。1
                 ByteBuf b = buffers[i++];
                 if (b == null) {
                     break;
                 }
+                // 把当前 index 增加到 ByteBuf 集合中
                 cIndex = addComponent0(increaseWriterIndex, cIndex, b) + 1;
                 int size = components.size();
                 if (cIndex > size) {
@@ -343,6 +414,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 在特定索引上添加给定的{@link ByteBuf}s·
+     *
      * Add the given {@link ByteBuf}s on the specific index
      *
      * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
@@ -361,13 +434,23 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return this;
     }
 
+    /**
+     * 往索引处增加 buffers
+     *
+     * @param increaseIndex
+     * @param cIndex
+     * @param buffers
+     * @return
+     */
     private int addComponents0(boolean increaseIndex, int cIndex, Iterable<ByteBuf> buffers) {
+        // 如果是一个buffer 则直接添加
         if (buffers instanceof ByteBuf) {
             // If buffers also implements ByteBuf (e.g. CompositeByteBuf), it has to go to addComponent(ByteBuf).
             return addComponent0(increaseIndex, cIndex, (ByteBuf) buffers);
         }
         checkNotNull(buffers, "buffers");
 
+        // 如果不是 Collection 类型的参数，则转换成 Collection。
         if (!(buffers instanceof Collection)) {
             List<ByteBuf> list = new ArrayList<ByteBuf>();
             try {
@@ -391,10 +474,15 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         }
 
         Collection<ByteBuf> col = (Collection<ByteBuf>) buffers;
+        // Collection.toArray(new ByteBuf[0])函数，如果该对象为0 ，则用 new ByteBuf[0]作为返回值
         return addComponents0(increaseIndex, cIndex, col.toArray(new ByteBuf[0]), 0 , col.size());
     }
 
     /**
+     * 巩固整个数组
+     *
+     * 这应该只作为方法的最后一个操作调用，因为这可能会调整组件的底层数组，从而影响索引等。
+     *
      * This should only be called as last operation from a method as this may adjust the underlying
      * array of components and so affect the index etc.
      */
@@ -421,7 +509,12 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         }
     }
 
+    /**
+     * 验证索引 cIndex 大于0 并且小于 components.size();
+     * @param cIndex
+     */
     private void checkComponentIndex(int cIndex) {
+        // 检查是否可访问
         ensureAccessible();
         if (cIndex < 0 || cIndex > components.size()) {
             throw new IndexOutOfBoundsException(String.format(
@@ -430,6 +523,11 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         }
     }
 
+    /**
+     * 检查索引 cIndex 大于0,并且和 numComponents 的和小于 components.size();
+     * @param cIndex
+     * @param numComponents
+     */
     private void checkComponentIndex(int cIndex, int numComponents) {
         ensureAccessible();
         if (cIndex < 0 || cIndex + numComponents > components.size()) {
@@ -440,6 +538,10 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         }
     }
 
+    /**
+     * 更新offset
+     * @param cIndex
+     */
     private void updateComponentOffsets(int cIndex) {
         int size = components.size();
         if (size <= cIndex) {
@@ -452,7 +554,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
             c.endOffset = c.length;
             cIndex ++;
         }
-
+        // 从索引位置开始更新offset
         for (int i = cIndex; i < size; i ++) {
             Component prev = components.get(i - 1);
             Component cur = components.get(i);
@@ -462,6 +564,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 移除索引处的buffer
+     *
      * Remove the {@link ByteBuf} from the given index.
      *
      * @param cIndex the index on from which the {@link ByteBuf} will be remove
@@ -469,6 +573,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     public CompositeByteBuf removeComponent(int cIndex) {
         checkComponentIndex(cIndex);
         Component comp = components.remove(cIndex);
+        // 释放资源
         comp.freeIfNecessary();
         if (comp.length > 0) {
             // Only need to call updateComponentOffsets if the length was > 0
@@ -478,6 +583,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 从给定索引开始,删除 numComponents 个 Component
+     *
      * Remove the number of {@link ByteBuf}s starting from the given index.
      *
      * @param cIndex the index on which the {@link ByteBuf}s will be started to removed
@@ -502,11 +609,16 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
 
         if (needsUpdate) {
             // Only need to call updateComponentOffsets if the length was > 0
+            // 只有长度大于 0 的情况下才需要调用
             updateComponentOffsets(cIndex);
         }
         return this;
     }
 
+    /**
+     * 获取当前 CompositeByteBuf 的迭代器
+     * @return
+     */
     @Override
     public Iterator<ByteBuf> iterator() {
         ensureAccessible();
@@ -517,24 +629,36 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 从 offset 处分解 length 长度的数组，组装成若干个 ByteBuf 组成的List 返回。
+     * 与{@link #slice(int, int)}相同，只是这个方法返回一个列表。
+     * {@link #slice(int, int)}方法返回一个ByteBuf
+     *
      * Same with {@link #slice(int, int)} except that this method returns a list.
      */
     public List<ByteBuf> decompose(int offset, int length) {
+        // 检查是否超过容量
         checkIndex(offset, length);
         if (length == 0) {
             return Collections.emptyList();
         }
 
+        // 给定偏移量的索引
         int componentId = toComponentIndex(offset);
+
         List<ByteBuf> slice = new ArrayList<ByteBuf>(components.size());
 
         // The first component
+        // 获取偏移量索引的 Component
         Component firstC = components.get(componentId);
+
+        // 获取第一个 Component 的整个字节数组
         ByteBuf first = firstC.buf.duplicate();
+        // 设置 Component 的 readIndex
         first.readerIndex(offset - firstC.offset);
 
         ByteBuf buf = first;
         int bytesToSlice = length;
+        //  循环取出 Components 中的 length长度的 buffer。
         do {
             int readableBytes = buf.readableBytes();
             if (bytesToSlice <= readableBytes) {
@@ -554,6 +678,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         } while (bytesToSlice > 0);
 
         // Slice all components because only readable bytes are interesting.
+        // 把 slice中的所有item 重新组装，只提取可读的部分
         for (int i = 0; i < slice.size(); i ++) {
             slice.set(i, slice.get(i).slice());
         }
@@ -644,6 +769,12 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return components.get(numComponents - 1).endOffset;
     }
 
+    /**
+     * 调整此缓冲区的容量。如果{@code newCapacity}小于当前容量，则该缓冲区的内容将被截断。
+     * 如果{@code newCapacity}大于当前容量，则缓冲区将附加长度为{@code (newCapacity - currentCapacity)}的未指定数据。
+     * @param newCapacity
+     * @return
+     */
     @Override
     public CompositeByteBuf capacity(int newCapacity) {
         checkNewCapacity(newCapacity);
@@ -717,6 +848,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 返回给定偏移量的索引
+     *
      * Return the index for the given offset
      */
     public int toComponentIndex(int offset) {
@@ -1664,10 +1797,25 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return result + ", components=" + components.size() + ')';
     }
 
+    /**
+     * CompositeByteBuf的内部组件
+     */
     private static final class Component {
+        /**
+         * ByteBuf
+         */
         final ByteBuf buf;
+        /**
+         * 长度
+         */
         final int length;
+        /**
+         * 位移
+         */
         int offset;
+        /**
+         * 偏移量
+         */
         int endOffset;
 
         Component(ByteBuf buf) {
