@@ -877,6 +877,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf getBytes(int index, byte[] dst);
 
     /**
+     * 从指定的绝对{@code index}开始，将此缓冲区的数据传输到指定的目的地。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}。
+     *
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index}.
      * This method does not modify {@code readerIndex} or {@code writerIndex}
@@ -896,6 +899,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf getBytes(int index, byte[] dst, int dstIndex, int length);
 
     /**
+     * 从指定的绝对{@code index}开始将该缓冲区的数据传输到指定的目的地，直到目的地的位置达到其限制。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}，而目标的{@code position}将被增加。
+     *
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index} until the destination's position
      * reaches its limit.
