@@ -1526,6 +1526,10 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
     }
 
+    /**
+     * 检查是否有 minimumReadableBytes 或以上可读
+     * @param minimumReadableBytes
+     */
     private void checkReadableBytes0(int minimumReadableBytes) {
         // 是否可访问
         ensureAccessible();
@@ -1547,6 +1551,11 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
     }
 
+    /**
+     * 设置 readerIndex 和 writerIndex
+     * @param readerIndex
+     * @param writerIndex
+     */
     final void setIndex0(int readerIndex, int writerIndex) {
         this.readerIndex = readerIndex;
         this.writerIndex = writerIndex;
