@@ -869,7 +869,6 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
      */
     public int toComponentIndex(int offset) {
         checkIndex(offset);
-
         for (int low = 0, high = components.size(); low <= high;) {
             int mid = low + high >>> 1;
             Component c = components.get(mid);
@@ -885,6 +884,11 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         throw new Error("should not reach here");
     }
 
+    /**
+     * 返回 cIndex 对应的 Component 索引
+     * @param cIndex
+     * @return
+     */
     public int toByteIndex(int cIndex) {
         checkComponentIndex(cIndex);
         return components.get(cIndex).offset;
@@ -997,13 +1001,26 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         }
     }
 
+    /**
+     * todo 没有看懂，以后再看。
+     * 从指定的绝对{@code index}开始，将此缓冲区的数据传输到指定的目的地。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}。
+     *
+     * @param index
+     * @param dst
+     * @param dstIndex the first index of the destination 目标的第一个索引
+     * @param length   the number of bytes to transfer 要传输的字节数
+     *
+     * @return
+     */
     @Override
     public CompositeByteBuf getBytes(int index, byte[] dst, int dstIndex, int length) {
+        // 检查参数
         checkDstIndex(index, length, dstIndex, dst.length);
         if (length == 0) {
             return this;
         }
-
+        // component位置
         int i = toComponentIndex(index);
         while (length > 0) {
             Component c = components.get(i);
@@ -1019,9 +1036,21 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return this;
     }
 
+    /**
+     * todo 暂时闹不明白 以后看
+     *
+     * 从指定的绝对{@code index}开始将该缓冲区的数据传输到指定的目的地，直到目的地的位置达到其限制。
+     * 此方法不修改此缓冲区的{@code readerIndex}或{@code writerIndex}，而目标的{@code position}将被增加。
+     *
+     * @param index
+     * @param dst
+     * @return
+     */
     @Override
     public CompositeByteBuf getBytes(int index, ByteBuffer dst) {
+        // limit
         int limit = dst.limit();
+        // limit - position
         int length = dst.remaining();
 
         checkIndex(index, length);
@@ -1482,6 +1511,13 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return readBytes;
     }
 
+    /**
+     * 返回此缓冲区的子区域的副本。
+     *
+     * @param index
+     * @param length
+     * @return
+     */
     @Override
     public ByteBuf copy(int index, int length) {
         checkIndex(index, length);
