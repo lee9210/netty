@@ -29,6 +29,7 @@ import java.nio.channels.ScatteringByteChannel;
 
 
 /**
+ * ByteBuffer 的只读装饰类
  * Read-only ByteBuf which wraps a read-only ByteBuffer.
  */
 class ReadOnlyByteBufferBuf extends AbstractReferenceCountedByteBuf {
