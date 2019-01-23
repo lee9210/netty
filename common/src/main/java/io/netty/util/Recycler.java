@@ -199,7 +199,7 @@ public abstract class Recycler<T> {
 
     protected Recycler(int maxCapacityPerThread, int maxSharedCapacityFactor,
                        int ratio, int maxDelayedQueuesPerThread) {
-        //根据ratio获取一个掩码,默认为8,那么ratioMask二进制就是 "111"
+        // 根据ratio获取一个掩码,默认为8,那么ratioMask二进制就是 "111"
         ratioMask = safeFindNextPositivePowerOfTwo(ratio) - 1;
         if (maxCapacityPerThread <= 0) {
             this.maxCapacityPerThread = 0;
@@ -1150,8 +1150,9 @@ return new WrapRecycler(handle);
 
 blog
  https://www.jianshu.com/p/854b855bd198
+ https://www.jianshu.com/p/83469191509b
  https://blog.csdn.net/levena/article/details/78144924
-
+ https://www.cnblogs.com/xiangnan6122/p/10208908.html
 
 
 
