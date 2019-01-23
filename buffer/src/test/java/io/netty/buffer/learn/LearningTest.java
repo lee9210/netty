@@ -1,6 +1,7 @@
 package io.netty.buffer.learn;
 
 import io.netty.util.Recycler;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -89,5 +90,67 @@ public class LearningTest {
         User user2 = RECYCLER.get();
         user2.recycle();
         System.out.println(user1==user2);
+    }
+
+    private static final Recycler<User1> userRecycler = new Recycler<User1>() {
+        @Override
+        protected User1 newObject(Handle<User1> handle) {
+            return new User1(handle);
+        }
+    };
+
+    static final class User1 {
+        private String name;
+        private Recycler.Handle<User1> handle;
+
+        public void setName(String name){
+            this.name = name;
+        }
+
+        public User1(Recycler.Handle<User1> handle) {
+            this.handle = handle;
+        }
+
+        public void recycle() {
+            handle.recycle(this);
+        }
+        public String toString(){
+            return null == name ? "init" : name;
+        }
+    }
+    @Test
+    public void testGetAndRecycleAtSameThread() {
+        // 1、从回收池获取对象
+        User1 user1 = userRecycler.get();
+        // 2、设置对象并使用
+        user1.setName("hello,java");
+        System.out.println(user1);
+        // 3、对象恢复出厂设置
+        user1.setName(null);
+        // 4、回收对象到对象池
+        user1.recycle();
+        // 5、从回收池获取对象
+        User1 user2 = userRecycler.get();
+        Assert.assertSame(user1, user2);
+    }
+    @Test
+    public void testGetAndRecycleAtDifferentThread() throws InterruptedException {
+        // 1、从回收池获取对象
+        User1 user1 = userRecycler.get();
+        // 2、设置对象并使用
+        user1.setName("hello,java");
+
+        new Thread(()->{
+            System.out.println(user1);
+            // 3、对象恢复出厂设置
+            user1.setName(null);
+            // 4、回收对象到对象池
+            user1.recycle();
+        }).start();
+
+        // 5、从回收池获取对象
+        User1 user2 = userRecycler.get();
+        System.out.println(user2);
+        Assert.assertSame(user1, user2);
     }
 }
